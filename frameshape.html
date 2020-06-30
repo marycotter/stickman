@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+    <script src='fabric.js'></script>
+    <script src='stickman.js'></script>
+    <head>
+    <style>
+        .listbox {
+            position: relative;
+            left:50px;
+        }
+
+        .simbox {
+            position: absolute;
+            border-width:5px; 
+            border-color: green;
+            border-style: solid;    
+            background-color: #FFFFFF;
+        }
+    </style>
+    </head>
+
+    <body>
+        <div class="listbox">
+            <br> 
+            <br>
+            <button onclick="theSimulation.reset(); ">reset</button>
+            <button onclick="theSimulation.start(); ">start</button>
+            <button onclick="theSimulation.stop(); ">stop</button>
+             <label for="favcolor">Select color:</label>
+                <input type="color" id="stick-color" name="stick-color" value="#800080">
+            <br>
+            <br>
+        </div>
+        <div class="simbox" id="simX" >    
+        <canvas id="theStage" width=500px height=300px ></canvas>     
+        </div>
+        <div class="listbox">
+            <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
+            <button onClick="pursan.updateLoc(); ">update loc</button>
+            <button onClick="pursan.showBox(); ">show box</button>
+            <button onClick="pursan.hideBox(); ">hide box</button>
+            <br>
+            <br>
+</div>
+    </body>
+    
+<script>
+     
+const theCanvas = new fabric.Canvas('theStage');
+ function redrawStage(now){ 
+        pursan.walk();
+ }
+    
+const theSimulation = { 
+    frametime : 0,
+    framedelta : 40, 
+    intervalTimer : null,
+
+    reset: function(){     
+        if ( this.intervalTimer ) clearInterval(this.intervalTimer);
+        theSimulation.frametime=0;   
+        const leftLeg = pursan.item(0);
+        const rightLeg = pursan.item(1);
+        
+        //pursan.legAngle is undefined??? but i defined it @ line 106
+        rightLeg.set('angle', pursan.legAngle);
+        console.log(pursan.legAngle);
+        leftLeg.set('angle', -rightLeg.angle);
+       
+        theCanvas.renderAll();
+    },  
+    start: function(){     
+        this.intervalTimer = setInterval(theSimulation.eachFrame,       theSimulation.framedelta);
+    },
+    stop: function(){
+        clearInterval(this.intervalTimer);
+    },
+    eachFrame: function() {
+        // move frame time ahead framedelta 
+        now = theSimulation.frametime;
+        theSimulation.frametime += theSimulation.framedelta; 
+        console.log(' it is now:'+now+'\n');
+        redrawStage(now);
+        theCanvas.renderAll();
+        
+        //escape hatch.
+        /*if (theSimulation.frametime > 1000 ){
+            theSimulation.stop()
+            console.log('reached limit and cleared Interval',            
+                        theSimulation.intervalTimer, now);
+        }*/
+    },
+}
+
+pursan = new fabric.Stickman({
+    color: 'pink',
+    left: 250,
+    top: 100,
+    height: 150,
+    headRadius: 30,
+    armLength: 50,
+    armAngle: 40,
+    legLength: 50,
+    legAngle: 30,
+    weight: 7,
+}); 
+theCanvas.add(pursan);
+// listen to change of the color picker
+document.getElementById('stick-color').addEventListener('change', function(){
+    const newColor = this.value;
+    pursan.changeColor(newColor);
+})
+    
+var now = 0;    //global keeping milliseconds of simulated time.
+     
+    </script>
+</html>
